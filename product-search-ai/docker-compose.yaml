@@ -1,0 +1,49 @@
+services:
+  mongodb:
+    image: mongo:6.0        # Use the official MongoDB image
+    container_name: mongodb
+    ports:
+      - "27017:27017"       # Expose MongoDB on port 27017
+    networks:
+      - backend
+    volumes:
+      - mongo_data:/data/db  # Persist MongoDB data in a volume
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 10s
+      timeout: 5s
+      retries: 2
+  embedding-service:
+    image: embedding-service
+    build:
+      context: ./embedding-service
+    container_name: embedding
+    ports:
+      - "5080:5000"
+    networks:
+      - backend
+  bby-search-service:
+    image: bby-search-service
+    build:
+      context: .
+    container_name: bby-search
+    ports:
+      - "8081:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/vector_db
+    depends_on:
+      - mongodb
+      - embedding-service
+    restart: on-failure:2
+    networks:
+      - backend
+
+networks:
+  backend:
+    name: backend
+    driver: bridge
+
+volumes:
+  mongo_data:
+    driver: local

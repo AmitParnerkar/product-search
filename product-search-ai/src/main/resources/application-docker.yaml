@@ -1,0 +1,10 @@
+# Docker profile
+embedding-service:
+  url: http://embedding:5000/generate_embedding
+
+spring:
+  data:
+    mongodb:
+      uri: ${SPRING_DATA_MONGODB_URI} # Change to your MongoDB URI
+
+

@@ -1,0 +1,12 @@
+embedding-service:
+ url: http://localhost:5080/generate_embedding
+
+spring:
+ application:
+  name: bestbuy-search-ai
+ data:
+  mongodb:
+   uri: mongodb://localhost:27017/vector_db
+
+server:
+ port: 8080

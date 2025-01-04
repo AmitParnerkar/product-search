@@ -1,0 +1,30 @@
+spring:
+ application:
+  name: product-search-ai
+ profiles:
+  active: local
+logging:
+ level:
+  root: debug
+  com:
+   spinach:
+    bestbuy:
+     ai:
+      services: debug
+   org.springframework.cache: DEBUG
+resilience4j:
+ retry:
+  instances:
+   embeddingService:
+    max-attempts: 3
+    wait-duration: 500ms
+management:
+ endpoints:
+  web:
+   exposure:
+    include: health,info
+ endpoint:
+  health:
+   show-details: always
+server:
+ port: 8080

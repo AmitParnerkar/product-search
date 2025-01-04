@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product-Search-AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            color: #333;
+        }
+        header {
+            background-color: #007acc;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+        }
+        header h1 {
+            margin: 0;
+        }
+        main {
+            padding: 2rem;
+            max-width: 800px;
+            margin: auto;
+            background: white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            color: #007acc;
+            border-bottom: 2px solid #007acc;
+            padding-bottom: 0.2rem;
+        }
+        pre, code {
+            background: #f4f4f4;
+            padding: 0.5rem;
+            border-radius: 5px;
+            display: block;
+            overflow-x: auto;
+        }
+        ul {
+            list-style-type: disc;
+            padding-left: 2rem;
+        }
+        li {
+            margin: 0.5rem 0;
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+        }
+        footer {
+            text-align: center;
+            padding: 1rem 0;
+            background: #333;
+            color: white;
+        }
+        .json {
+            background: #eef;
+            padding: 0.5rem;
+            border-radius: 4px;
+        }
+        .container {
+            margin-bottom: 2rem;
+        }
+    </style>
+</head>
+<body>
+<header>
+    <h1>Product-Search-AI</h1>
+</header>
+<main>
+    <div class="container">
+        <p>Product-Search-AI is a kotlin based Spring Boot application designed to handle RESTful endpoints for searching products. The service is architected to efficiently perform vector-based searches using embedding data, leveraging microservices and containerization.</p>
+    </div>
+    <section class="container">
+        <h2>Features</h2>
+        <ul>
+            <li><strong>RESTful Endpoints</strong>:
+                <ul>
+                    <li><code>search</code>: Accepts a query string and returns relevant product information.</li>
+                    <li><code>add</code>: Allows adding new product details to the database.</li>
+                </ul>
+            </li>
+            <li><strong>Microservices Architecture</strong>: Communicates with an external Python service for embedding generation.</li>
+            <li><strong>Containerized Components</strong>:
+                <ul>
+                    <li>Spring Boot service</li>
+                    <li>Python <code>embedding-service</code></li>
+                    <li>MongoDB database</li>
+                </ul>
+            </li>
+            <li><strong>Kubernetes Deployment</strong>: All components run in separate containers within a Kubernetes cluster.</li>
+        </ul>
+    </section>
+
+    <section class="container">
+        <h2>System Workflow</h2>
+        <ol>
+            <li><strong>Search Request</strong>: The user sends a <code>search</code> request with string data, e.g., "Latest Apple iPhone."</li>
+            <li><strong>Embedding Generation</strong>: The Spring Boot service calls the <code>embedding-service</code>, a Python-based web service running in a separate container, to generate embedding data.</li>
+            <li><strong>Vector Search</strong>: The embedding data is used to perform a vector-based search in MongoDB.</li>
+            <li><strong>Result Retrieval</strong>: The search results from MongoDB are returned to the user.</li>
+        </ol>
+    </section>
+
+    <section class="container">
+        <h2>System Architecture Diagram</h2>
+        <img
+                src="WebAppReferenceArchitecture.png"
+                class="diagram"
+                alt="Architecture Diagram"
+        />
+    </section>
+
+    <section class="container">
+        <h2>Deployment Environment</h2>
+        <ul>
+            <li><strong>Cloud Provider</strong>: AWS</li>
+            <li><strong>Orchestration Platform</strong>: Kubernetes</li>
+            <li><strong>Containerization</strong>: Docker</li>
+        </ul>
+    </section>
+
+    <section class="container">
+        <h2>Technologies Used</h2>
+        <ul>
+            <li>Spring Boot (Java)</li>
+            <li>Python (for the <code>embedding-service</code>)</li>
+            <li>MongoDB (NoSQL database)</li>
+            <li>Kubernetes (Container orchestration)</li>
+            <li>Docker (Containerization)</li>
+        </ul>
+    </section>
+
+    <section class="container">
+        <h2>REST Endpoints</h2>
+        <h3>1. POST <code>/search</code></h3>
+        <p><strong>Description</strong>: Accepts a search query and returns relevant results.</p>
+        <p><strong>Request</strong>:</p>
+        <pre class="json">
+{
+  "query": "Latest Apple iPhone"
+}
+            </pre>
+        <p><strong>Response</strong>:</p>
+        <pre class="json">
+{
+  "results": [
+    {
+      "id": "123",
+      "name": "Apple iPhone 15",
+      "description": "Latest model of Apple iPhone."
+    }
+  ]
+}
+            </pre>
+        <h3>2. POST <code>/add</code></h3>
+        <p><strong>Description</strong>: Adds a new product to the database.</p>
+        <p><strong>Request</strong>:</p>
+        <pre class="json">
+{
+  "id": "123",
+  "name": "Apple iPhone 15",
+  "description": "Latest model of Apple iPhone."
+}
+            </pre>
+        <p><strong>Response</strong>:</p>
+        <pre class="json">
+{
+  "message": "Product added successfully"
+}
+            </pre>
+    </section>
+
+    <section class="container">
+        <h2>Getting Started</h2>
+        <h3>1. Clone the Repository</h3>
+        <pre>
+git clone https://github.com/your-repo/product-search-ai.git
+cd product-search-ai
+            </pre>
+        <h3>2. Build and Run Services</h3>
+        <p><strong>Spring Boot Application</strong>:</p>
+        <pre>
+./mvnw spring-boot:run
+            </pre>
+        <p><strong>Python Embedding-Service</strong>:</p>
+        <pre>
+python3 embedding_service.py
+            </pre>
+        <h3>3. Deploy to Kubernetes</h3>
+        <p>Apply Kubernetes configurations:</p>
+        <pre>
+kubectl apply -f k8s/
+            </pre>
+        <h3>4. Access the Service</h3>
+        <p>Base URL: <code>http://&lt;your-kubernetes-cluster-ip&gt;:&lt;node-port&gt;</code></p>
+    </section>
+
+    <section class="container">
+        <h2>Future Enhancements</h2>
+        <ul>
+            <li>Use ElasticSearch for storing embeddings as vector.</li>
+            <li>Train a local model explicitly for data</li>
+            <li>Implement caching for embedding results.</li>
+            <li>Add authentication and authorization.</li>
+        </ul>
+    </section>
+
+    <section class="container">
+        <h2>License</h2>
+        <p>This project is licensed under the <a href="LICENSE">MIT License</a>.</p>
+    </section>
+</main>
+<footer>
+    <p>Happy coding! 🚀</p>
+</footer>
+</body>
+</html>

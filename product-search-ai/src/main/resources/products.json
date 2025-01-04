@@ -1,0 +1,77 @@
+[
+  {
+    "name": "Apple iPhone 15 Pro",
+    "description": "Latest smartphone from Apple with 128GB storage, A17 Bionic chip, and titanium design.",
+    "category": "Smartphones"
+  },
+  {
+    "name": "Samsung Galaxy S23 Ultra",
+    "description": "Flagship phone with a 200MP camera, S Pen support, and 512GB storage.",
+    "category": "Smartphones"
+  },
+  {
+    "name": "Sony WH-1000XM5 Wireless Headphones",
+    "description": "Noise-canceling over-ear headphones with 30 hours of battery life.",
+    "category": "Headphones"
+  },
+  {
+  "name": "Apple MacBook Air M2",
+  "description": "13-inch laptop with M2 chip, 8GB RAM, and 256GB SSD.",
+  "category": "Laptops"
+  },
+  {
+    "name": "Dell XPS 13 Plus",
+    "description": "High-performance laptop with a 13.4-inch display, Intel Core i7, and 512GB SSD.",
+    "category": "Laptops"
+  },
+  {
+    "name": "Samsung 65-inch QLED TV",
+    "description": "4K Ultra HD Smart TV with Quantum Dot technology and HDR support.",
+    "category": "Televisions"
+  },
+  {
+    "name": "LG 55-inch OLED TV",
+    "description": "Premium 4K OLED TV with deep blacks and Dolby Vision support.",
+    "category": "Televisions"
+  },
+  {
+    "name": "Bose QuietComfort Earbuds II",
+    "description": "True wireless earbuds with active noise cancellation and 6 hours of battery life.",
+    "category": "Earbuds"
+  },
+  {
+    "name": "GoPro HERO11 Black",
+    "description": "Action camera with 5.3K60 video recording and HyperSmooth 5.0 stabilization.",
+    "category": "Cameras"
+  },
+  {
+    "name": "Canon EOS R10 Mirrorless Camera",
+    "description": "Compact mirrorless camera with 24.2 MP sensor and 4K video support.",
+    "category": "Cameras"
+  },
+  {
+    "name": "Apple Watch Series 9",
+    "description": "Smartwatch with advanced health tracking, always-on Retina display, and 18-hour battery life.",
+    "category": "Smartwatches"
+  },
+  {
+    "name": "Samsung Galaxy Watch6",
+    "description": "Fitness-focused smartwatch with Wear OS and heart rate monitoring.",
+    "category": "Smartwatches"
+  },
+  {
+    "name": "Dyson V15 Detect Vacuum",
+    "description": "Cordless vacuum cleaner with laser dust detection and advanced HEPA filtration.",
+    "category": "Home Appliances"
+  },
+  {
+    "name": "KitchenAid Stand Mixer",
+    "description": "Classic 5-quart stand mixer with 10 speeds and multiple attachments.",
+    "category": "Home Appliances"
+  },
+  {
+    "name": "PlayStation 5 Console",
+    "description": "Next-gen gaming console with ultra-fast SSD and stunning 4K graphics.",
+    "category": "Gaming"
+  }
+]
