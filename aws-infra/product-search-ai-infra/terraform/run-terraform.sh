@@ -12,7 +12,8 @@ export BW_SESSION=$(bw login $BW_LOGIN --method 2 --raw)
 bw sync
 
 # Extract and set environment variables for AWS Secrets
-eval $(bw get item "Environment Variables" | jq -r '.fields[] | select(.value == null or .value == "") | .name')
+eval $(bw get item "Product-Search-AWS-Variables" | jq -r '.fields[] | select(.value == null or .value == "") | .name')
+eval $(bw get item "Product-Search-CloundFlare" | jq -r '.fields[] | select(.value == null or .value == "") | .name')
 
 # Dynamically pass 'apply' or 'destroy' based on the script argument
 if [ "$1" == "apply" ] || [ "$1" == "destroy" ]; then
