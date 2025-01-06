@@ -1,7 +1,7 @@
 # Configure Cloudflare provider
 
 provider "cloudflare" {
-  api_key = var.api_key
+  api_key = var.cloudflare_api_key
   email    = "amit.parnerkar@gmail.com"
 }
 
