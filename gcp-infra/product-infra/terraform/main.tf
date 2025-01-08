@@ -69,15 +69,13 @@ resource "google_compute_firewall" "nat_ssh" {
   network = google_compute_network.default.name
 
   description = "Allow SSH traffic from the internet"
-
-  direction     = "INGRESS"
   allow {
     protocol = "tcp"
     ports    = ["22"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
   target_tags   = ["${var.network}-nat-ssh"]
+  source_ranges = ["0.0.0.0/0"]
 }
 
 # Ingress rule for VPN traffic (UDP 1194)
@@ -118,14 +116,13 @@ resource "google_compute_firewall" "web_http" {
   network = google_compute_network.default.name
   description = "Allow HTTP traffic from the internet"
 
-  direction     = "INGRESS"
   allow {
     protocol = "tcp"
     ports    = ["80"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
   target_tags   = ["${var.network}-web-http"]
+  source_ranges = ["0.0.0.0/0"]
 }
 
 # Ingress rule for HTTPS traffic
@@ -133,13 +130,11 @@ resource "google_compute_firewall" "web_https" {
   name    = "${var.network}-web-https"
   network = google_compute_network.default.name
   description = "Allow HTTPS traffic from the internet"
-
-  direction     = "INGRESS"
   allow {
     protocol = "tcp"
     ports    = ["443"]
   }
 
-  source_ranges = ["0.0.0.0/0"]
   target_tags   = ["${var.network}-web-https"]
+  source_ranges = ["0.0.0.0/0"]
 }
