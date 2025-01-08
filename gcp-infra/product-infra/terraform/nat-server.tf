@@ -31,7 +31,7 @@ resource "google_compute_instance" "nat" {
     "${var.network}-nat-egress"]
 
   metadata = {
-    ssh-keys = "ubuntu:${file("/Users/amitparnerkar/.ssh/id_ed25519.pub")}"
+    ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}"
   }
 
   metadata_startup_script = <<-EOT
