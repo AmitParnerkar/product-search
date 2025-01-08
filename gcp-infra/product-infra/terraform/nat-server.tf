@@ -4,12 +4,6 @@ resource "google_compute_address" "nat_ip" {
   region = var.region
 }
 
-resource "google_compute_router" "nat_router" {
-  name    = "${var.network}-nat-router"
-  network = google_compute_network.default.name
-  region  = var.region
-}
-
 # Declare the Google Compute Instance resource (NAT instance)
 resource "google_compute_instance" "nat" {
   name         = "${var.network}-nat"
@@ -23,7 +17,6 @@ resource "google_compute_instance" "nat" {
   }
 
   network_interface {
-    network    = google_compute_network.default.name
     subnetwork = google_compute_subnetwork.public.name
     access_config {
       # Use the nat_ip from google_compute_address
