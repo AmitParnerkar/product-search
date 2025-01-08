@@ -39,7 +39,7 @@ resource "google_compute_instance" "nat" {
   exec > /var/log/startup-script.log 2>&1
   set -x
 
-  sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+  sudo iptables -t nat -A POSTROUTING -o ens4 -j MASQUERADE
   echo 1 | sudo tee /proc/sys/net/ipv4/conf/all/forwarding
 
   sudo apt-get update
