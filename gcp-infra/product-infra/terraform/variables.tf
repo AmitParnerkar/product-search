@@ -1,7 +1,12 @@
 # Google Cloud provider configuration variables
-variable "credentials_file" {
+variable "gcp_credentials" {
   description = "Path to the GCP credentials JSON file"
   sensitive   = true
+}
+
+variable "network" {
+  description = "vpc name"
+  default = "automated-vpc"
 }
 
 variable "project_id" {
@@ -20,17 +25,17 @@ variable "zone" {
 
 variable "vpc_cidr" {
   description = "CIDR for VPC"
-  default     = "10.128.0.0/16"
+  default     = "10.0.0.0/8"
 }
 
 variable "public_subnet_cidr" {
   description = "CIDR for public subnet"
-  default     = "10.128.0.0/24"
+  default     = "10.0.0.0/24"
 }
 
 variable "private_subnet_cidr" {
   description = "CIDR for private subnet"
-  default     = "10.128.1.0/24"
+  default     = "10.0.1.0/24"
 }
 
 # GCP equivalent for instance base images (Ubuntu 22.04)

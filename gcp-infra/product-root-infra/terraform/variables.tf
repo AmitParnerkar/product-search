@@ -1,4 +1,4 @@
-variable "credentials_file" {
+variable "gcp_credentials" {
   description = "Path to the GCP service account key file"
   default     = "~/.gcp/product-search-key.json"
 }

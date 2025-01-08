@@ -10,12 +10,16 @@ output "public_subnet_id" {
   value = google_compute_subnetwork.public.id
 }
 
-output "security_web_id" {
-  value = google_compute_firewall.web.name
+output "security_web_http_id" {
+  value = google_compute_firewall.web_http.name
+}
+
+output "security_web_https_id" {
+  value = google_compute_firewall.web_https.name
 }
 
 output "common_security_group_id" {
-  value = google_compute_firewall.common.name
+  value = google_compute_firewall.common_egress.name
 }
 
 output "network_name" {
