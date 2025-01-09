@@ -5,7 +5,7 @@
 
 # Output the external IP of the GCP load balancer
 output "elbHostname" {
-  value = google_compute_address.lb_ip.address
+  value = google_compute_global_address.lb_ip.address
 }
 
 # Output the Cloudflare record name for the load balancer

@@ -1,9 +1,8 @@
 /* Cloudflare API key */
-variable "api_key" {
+variable "cloudflare_api_key" {
   description = "Cloudflare API key"
   sensitive   = true
 }
-
 
 variable "project_id" {
   description = "GCP project ID"

@@ -1,10 +1,18 @@
+# Setup our Google provider
+provider "google" {
+  credentials = file(var.gcp_credentials)
+  project     = var.project_id
+  region      = var.region
+}
+
 # App Servers (Equivalent to AWS EC2 instances)
 resource "google_compute_instance" "app" {
   count             = 2
-  name              = "app-${count.index}"
+  name              = "${data.terraform_remote_state.network.outputs.network}-product-app-${count.index}"
   machine_type      = "e2-standard-4" # Adjust machine type as needed
   zone              = "${var.region}-a"  # GCP zone, similar to AWS Availability Zone
-  project           = var.project_id
+  can_ip_forward    = true
+
   # Boot disk configuration
   boot_disk {
     initialize_params {
@@ -15,70 +23,101 @@ resource "google_compute_instance" "app" {
 
   # Network interface
   network_interface {
-    network    = data.terraform_remote_state.network.outputs.network_name  # Use network from remote state
-    subnetwork = data.terraform_remote_state.network.outputs.private_subnet_id  # Subnet from remote state
-    access_config {
-      # Public IP, remove if you don't need public IP for instances
-    }
+    network    = data.terraform_remote_state.network.outputs.network  # Use network from remote state
+    subnetwork = data.terraform_remote_state.network.outputs.private_subnet_name  # Subnet from remote state
   }
 
-  tags = ["app-server"]
+  # assign security groups
+  tags = [data.terraform_remote_state.network.outputs.common_security_group_ingress,
+    data.terraform_remote_state.network.outputs.common_security_group_egress]
+
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}" # SSH keys from local machine
   }
 
   # User data configuration for app setup (equivalent to AWS user_data)
-  metadata_startup_script = file("app-config/app.yaml")
+  metadata_startup_script = <<EOT
+  #!/bin/bash
+  sudo apt-get update
+  sudo apt-get install -y ca-certificates curl gnupg
+  sudo install -m 0755 -d /etc/apt/keyrings
+  sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+  sudo chmod a+r /etc/apt/keyrings/docker.asc
+  echo "deb [arch=amd64 signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu jammy stable" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+  sudo apt-get update
+  sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+  sudo usermod -aG docker ubuntu
+  sudo apt-get -y install vim
+  sudo wget -O /home/ubuntu/docker-compose.yaml https://gist.githubusercontent.com/AmitParnerkar/7d9305369284000be0b34951c634ef12/raw/4a17673f308cfca7dd10a839003b88078a2ad790/docker-compose.yaml
+  cd /home/ubuntu
+  sudo docker compose up -d
+  EOT
 }
 
-# Load Balancer (GCP equivalent to AWS ELB)
-resource "google_compute_backend_service" "app" {
-  name        = "automated-app-backend"
-  protocol    = "HTTP"
-  project     = var.project_id
+//* Load balancer - HTTP(S) */
+resource "google_compute_global_address" "lb_ip" {
+  name = "${data.terraform_remote_state.network.outputs.network}-product-app-lb-ip"
+}
 
+resource "google_compute_backend_service" "app_backend" {
+  name        = "${data.terraform_remote_state.network.outputs.network}-product-app-backend-service"
+  health_checks = [google_compute_http_health_check.app_health_check.self_link]
   backend {
-    group = google_compute_instance_group.app_instances.self_link
+    group = google_compute_instance_group.app_group.self_link
   }
-
-  health_checks = [google_compute_health_check.http_health_check.self_link]
 }
 
-# Global Forwarding Rule to route traffic to the backend service
-# resource "google_compute_global_forwarding_rule" "http_rule" {
-#   name       = "app-http-forwarding-rule"
-#   project    = var.project_id
-#   target     = google_compute_backend_service.app.self_link  # Correct backend service self-link
-#   port_range = "80"
-#   ip_address = google_compute_address.lb_ip.address  # IP address for the load balancer
-# }
+resource "google_compute_instance_group" "app_group" {
+  name    = "${data.terraform_remote_state.network.outputs.network}-product-app-group"
+  zone    = "${var.region}-a"
+  instances = google_compute_instance.app.*.self_link
+}
 
-# HTTP Health Check for Load Balancer
-resource "google_compute_health_check" "http_health_check" {
-  name               = "http-health-check"
-  check_interval_sec = 10
-  timeout_sec        = 5
-  healthy_threshold  = 2
+resource "google_compute_http_health_check" "app_health_check" {
+  name                = "${data.terraform_remote_state.network.outputs.network}-product-app-health-check"
+  request_path        = "/"
+  check_interval_sec  = 15
+  timeout_sec         = 5
+  healthy_threshold   = 2
   unhealthy_threshold = 2
-  project           = var.project_id
-  http_health_check {
-    port = 80
-    request_path = "/"
+}
+
+resource "google_compute_url_map" "app_url_map" {
+  name            = "${data.terraform_remote_state.network.outputs.network}-product-app-url-map"
+  default_service = google_compute_backend_service.app_backend.self_link
+}
+
+resource "google_compute_target_http_proxy" "http_proxy" {
+  name        = "${data.terraform_remote_state.network.outputs.network}-product-app-http-proxy"
+  url_map     = google_compute_url_map.app_url_map.self_link
+}
+
+resource "google_compute_global_forwarding_rule" "http_forwarding_rule" {
+  name       = "${data.terraform_remote_state.network.outputs.network}-product-app-http-rule"
+  ip_address = google_compute_global_address.lb_ip.address
+  port_range = "80"
+  target     = google_compute_target_http_proxy.http_proxy.self_link
+}
+
+/* Google-managed SSL Certificate */
+resource "google_compute_managed_ssl_certificate" "https_cert" {
+  name =  "${data.terraform_remote_state.network.outputs.network}-product-app-ssl-cert"
+  managed {
+    domains = ["spinachsoftware.com"] # Replace with your domain
   }
 }
 
-# Instance Group (for managing app instances in the backend)
-resource "google_compute_instance_group" "app_instances" {
-  name        = "app-instance-group"
-  project     = var.project_id
-  zone        = "${var.region}-a"
-  instances   = google_compute_instance.app.*.self_link  # Instances created previously
+/* HTTPS Target Proxy */
+resource "google_compute_target_https_proxy" "https_proxy" {
+  name        = "${data.terraform_remote_state.network.outputs.network}-product-app-https-proxy"
+  ssl_certificates = [google_compute_managed_ssl_certificate.https_cert.self_link]
+  url_map     = google_compute_url_map.app_url_map.self_link
 }
 
-# Static IP for Load Balancer (Global)
-resource "google_compute_address" "lb_ip" {
-  name         = "lb-ip"
-  project      = var.project_id
-  region       = var.region
-  address_type = "EXTERNAL"  # Ensure it's an external IP
+/* HTTPS Global Forwarding Rule */
+resource "google_compute_global_forwarding_rule" "https_forwarding_rule" {
+  name       = "${data.terraform_remote_state.network.outputs.network}-product-app-https-rule"
+  ip_address = google_compute_global_address.lb_ip.address
+  port_range = "443"
+  target     = google_compute_target_https_proxy.https_proxy.self_link
 }
