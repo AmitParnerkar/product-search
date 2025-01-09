@@ -29,7 +29,8 @@ resource "google_compute_instance" "app" {
 
   # assign security groups
   tags = [data.terraform_remote_state.network.outputs.common_security_group_ingress,
-    data.terraform_remote_state.network.outputs.common_security_group_egress]
+    data.terraform_remote_state.network.outputs.common_security_group_egress,
+    google_compute_firewall.allow_lb_to_private_subnet.name]
 
   metadata = {
     ssh-keys = "ubuntu:${file("~/.ssh/id_ed25519.pub")}" # SSH keys from local machine
@@ -65,6 +66,20 @@ resource "google_compute_backend_service" "app_backend" {
   backend {
     group = google_compute_instance_group.app_group.self_link
   }
+}
+
+resource "google_compute_firewall" "allow_lb_to_private_subnet" {
+  name    = "${data.terraform_remote_state.network.outputs.network}-allow-lb-health-check"
+  network = data.terraform_remote_state.network.outputs.network
+
+  allow {
+    protocol = "tcp"
+    ports    = ["80", "8080"] # Update these ports as per your app
+  }
+
+  source_ranges = ["0.0.0.0/0"] # Load balancer health check IPs
+
+  target_tags = ["${data.terraform_remote_state.network.outputs.network}-allow-lb-health-check"] # Add this tag to your app instances
 }
 
 resource "google_compute_instance_group" "app_group" {
