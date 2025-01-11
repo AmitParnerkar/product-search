@@ -11,6 +11,7 @@ bw sync
 
 # Extract and set environment variables for AWS Secrets
 eval $(bw get item "Product-Search-AZURE-Variables" | jq -r '.fields[] | select(.value == null or .value == "") | .name')
+eval $(bw get item "Product-Search-CloundFlare" | jq -r '.fields[] | select(.value == null or .value == "") | .name')
 
 # Dynamically pass 'plan', 'apply' or 'destroy' based on the script argument
 if [ "$1" == "apply" ] || [ "$1" == "destroy" ]; then

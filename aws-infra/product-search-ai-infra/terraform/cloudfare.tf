@@ -15,6 +15,6 @@ resource "cloudflare_record" "elb_record" {
   zone_id  = data.cloudflare_zone.main_zone.id
   name     = "bby-ai-aws.spinachsoftware.com"  # or "www" if you want a subdomain
   type     = "CNAME"
-  value    = aws_elb.app.dns_name
+  content    = aws_elb.app.dns_name
   proxied  = true  # Enable Cloudflare proxy if needed
 }
