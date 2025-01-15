@@ -8,5 +8,5 @@ output "elbHostname" {
 }
 
 output "Hostname" {
-  value = azurerm_dns_a_record.elb_record.name
+  value = cloudflare_record.elb_record.name
 }

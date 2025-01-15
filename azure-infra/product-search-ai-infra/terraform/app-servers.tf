@@ -39,10 +39,10 @@ resource "azurerm_linux_virtual_machine" "app" {
   tags = {
     Name = "automated-app-${count.index}"
   }
-
+#
 #   provisioner "remote-exec" {
 #     connection {
-#       host        = coalesce(self.public_ip_address, self.private_ip_address) # Azure-specific IP references
+#       host        = self.private_ip_address # Azure-specific IP references
 #       type        = "ssh"
 #       user        = "ubuntu"
 #       private_key = file("~/.ssh/id_ed25519")
@@ -102,7 +102,7 @@ resource "azurerm_lb" "app" {
   location            = var.region
 
   frontend_ip_configuration {
-    name                 = azurerm_public_ip.public_lb_ip.ip_address
+    name                 = azurerm_public_ip.public_lb_ip.name
     public_ip_address_id = azurerm_public_ip.public_lb_ip.id
   }
 }
@@ -113,102 +113,56 @@ resource "azurerm_public_ip" "public_lb_ip" {
   resource_group_name = "spinach-tfstate"
   allocation_method   = "Static"
 }
+#
+# resource "azurerm_network_security_group" "web" {
+#   name                = "automated-app-sg-web"
+#   location            = var.region
+#   resource_group_name = "spinach-tfstate" # Replace with your Azure resource group
+#
+#   # Allow HTTP traffic for web services
+#   security_rule {
+#     name                       = "AllowHTTP"
+#     priority                   = 300
+#     direction                  = "Inbound"
+#     access                     = "Allow"
+#     protocol                   = "Tcp"
+#     source_address_prefix      = "*"
+#     destination_address_prefix = "*"
+#     source_port_range          = "80"
+#     destination_port_range     = "80"
+#   }
+#
+#   # Allow HTTPS traffic for secure web services
+#   security_rule {
+#     name                       = "AllowHTTPS"
+#     priority                   = 400
+#     direction                  = "Inbound"
+#     access                     = "Allow"
+#     protocol                   = "Tcp"
+#     source_address_prefix      = "*"
+#     destination_address_prefix = "*"
+#     source_port_range          = "443"
+#     destination_port_range     = "443"
+#   }
+#
+#   # Allow all outbound traffic
+#   security_rule {
+#     name                       = "AllowAllOutbound"
+#     priority                   = 1000
+#     direction                  = "Outbound"
+#     access                     = "Allow"
+#     protocol                   = "*"
+#     source_address_prefix      = "*"
+#     destination_address_prefix = "*"
+#     source_port_range          = "*"
+#     destination_port_range     = "*"
+#   }
+# }
 
-/* Network Security Group for the Load Balancer */
-resource "azurerm_network_security_group" "web" {
-  name                = "automated-app-sg-web"
-  location            = var.region
-  resource_group_name = "spinach-tfstate"  # Replace with your Azure resource group
-
-  security_rule {
-    name                       = "AllowSSH"
-    priority                   = 1000
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_port_range          = "*"
-    destination_port_range     = "22"
-    source_address_prefix      = "0.0.0.0/0"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "AllowVPN"
-    priority                   = 200
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Udp"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "1194"
-    destination_port_range     = "1194"
-  }
-
-  security_rule {
-    name                       = "AllowNatTraffic"
-    priority                   = 1010
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-  }
-
-  security_rule {
-    name                       = "AllowAllInbound"
-    priority                   = 300
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-  }
-
-  security_rule {
-    name                       = "AllowAllOutbound"
-    priority                   = 400
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-  }
-
-  security_rule {
-    name                       = "AllowHTTP"
-    priority                   = 500
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "80"
-    destination_port_range     = "80"
-  }
-
-  security_rule {
-    name                       = "AllowHTTPS"
-    priority                   = 600
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "443"
-    destination_port_range     = "443"
-  }
-
-}
 
 /* Network Security Group Association */
 resource "azurerm_network_interface_security_group_association" "app" {
   count               = 2
   network_interface_id     = azurerm_network_interface.app[count.index].id
-  network_security_group_id = azurerm_network_security_group.web.id
+  network_security_group_id = data.terraform_remote_state.network.outputs.combined_sg_id
 }

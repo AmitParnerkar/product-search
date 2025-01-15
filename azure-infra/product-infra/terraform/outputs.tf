@@ -14,10 +14,6 @@ output "public_subnet_id" {
   value = azurerm_subnet.public.id
 }
 
-output "security_web_id" {
-  value = azurerm_network_security_group.web.id
-}
-
-output "common_security_group_id" {
-  value = azurerm_network_security_group.common.id
+output "combined_sg_id" {
+  value = azurerm_network_security_group.combined.id
 }
