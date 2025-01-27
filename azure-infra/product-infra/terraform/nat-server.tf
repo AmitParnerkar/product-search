@@ -7,6 +7,9 @@ resource "azurerm_linux_virtual_machine" "nat" {
   admin_username      = "ubuntu"
   network_interface_ids = [azurerm_network_interface.nat.id]
 
+  // remove the unsupported argument
+  // disable_source_dest_check = true
+
   admin_ssh_key {
     username   = "ubuntu"
     public_key = file("~/.ssh/id_ed25519.pub")
@@ -69,6 +72,9 @@ resource "azurerm_network_interface" "nat" {
     private_ip_address_allocation = "Dynamic"
     public_ip_address_id          = azurerm_public_ip.nat.id
   }
+
+  // remove the unsupported argument
+  // disable_source_dest_check = true
 
   tags = {
     Name = "${var.network}-nat-server-nic"

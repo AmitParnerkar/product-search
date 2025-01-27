@@ -1,5 +1,5 @@
-embedding-service:
- url: http://localhost:5080/generate_embedding
+llm-service:
+ url: http://localhost:5080/
 
 spring:
  application:

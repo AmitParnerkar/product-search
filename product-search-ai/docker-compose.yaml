@@ -13,17 +13,17 @@ services:
       interval: 10s
       timeout: 5s
       retries: 2
-  embedding-service:
-    image: embedding-service
+  llm-service:
+    image: paam0101/product-llm
     build:
-      context: ./embedding-service
-    container_name: embedding
+      context: llm-service
+    container_name: llm-service
     ports:
       - "5080:5000"
     networks:
       - backend
   bby-search-service:
-    image: bby-search-service
+    image: paam0101/search-ai
     build:
       context: .
     container_name: bby-search
@@ -34,7 +34,7 @@ services:
       - SPRING_DATA_MONGODB_URI=mongodb://mongodb:27017/vector_db
     depends_on:
       - mongodb
-      - embedding-service
+      - llm-service
     restart: on-failure:2
     networks:
       - backend

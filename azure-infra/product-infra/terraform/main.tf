@@ -19,40 +19,6 @@ resource "azurerm_virtual_network" "default" {
   }
 }
 
-/* Common Network Security Group */
-resource "azurerm_network_security_group" "common" {
-  name                = "${var.network}-SG-common"
-  location            = var.region
-  resource_group_name = "spinach-tfstate"
-  security_rule {
-    name                       = "AllowAllInbound"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-  }
-
-  security_rule {
-    name                       = "AllowAllOutbound"
-    priority                   = 200
-    direction                  = "Outbound"
-    access                     = "Allow"
-    protocol                   = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "*"
-    destination_port_range     = "*"
-  }
-
-  tags = {
-    Name = "${var.network}-SG-common"
-  }
-}
-
 resource "azurerm_network_security_group" "combined" {
   name                = "${var.network}-combined-nsg"
   location            = var.region
@@ -60,7 +26,7 @@ resource "azurerm_network_security_group" "combined" {
 
   security_rule {
     name                       = "AllowSSH"
-    priority                   = 1000
+    priority                   = 100
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "Tcp"
@@ -84,7 +50,7 @@ resource "azurerm_network_security_group" "combined" {
 
   security_rule {
     name                       = "AllowNatTraffic"
-    priority                   = 1010
+    priority                   = 300
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "*"
@@ -95,61 +61,26 @@ resource "azurerm_network_security_group" "combined" {
   }
 
   security_rule {
-    name                       = "AllowAllInbound"
-    priority                   = 100
+    name                       = "AllowInternalCommunication"
+    priority                   = 400
     direction                  = "Inbound"
     access                     = "Allow"
     protocol                   = "*"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
+    source_address_prefix      = "VirtualNetwork" # Allows communication within the same VNet
+    destination_address_prefix = "VirtualNetwork"
     source_port_range          = "*"
     destination_port_range     = "*"
   }
 
   security_rule {
     name                       = "AllowAllOutbound"
-    priority                   = 200
+    priority                   = 1000
     direction                  = "Outbound"
     access                     = "Allow"
     protocol                   = "*"
     source_address_prefix      = "*"
-    destination_address_prefix = "*"
+    destination_address_prefix = "0.0.0.0/0"
     source_port_range          = "*"
     destination_port_range     = "*"
-  }
-}
-
-/* Network Security Group for Web Server */
-resource "azurerm_network_security_group" "web" {
-  name                = "${var.network}-SG-web"
-  location            = var.region
-  resource_group_name = "spinach-tfstate"
-
-  security_rule {
-    name                       = "AllowHTTP"
-    priority                   = 100
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "80"
-    destination_port_range     = "80"
-  }
-
-  security_rule {
-    name                       = "AllowHTTPS"
-    priority                   = 200
-    direction                  = "Inbound"
-    access                     = "Allow"
-    protocol                   = "Tcp"
-    source_address_prefix      = "*"
-    destination_address_prefix = "*"
-    source_port_range          = "443"
-    destination_port_range     = "443"
-  }
-
-  tags = {
-    Name = "${var.network}-SG-web"
   }
 }

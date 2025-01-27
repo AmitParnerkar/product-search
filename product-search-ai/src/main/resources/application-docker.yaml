@@ -1,6 +1,6 @@
 # Docker profile
-embedding-service:
-  url: http://embedding:5000/generate_embedding
+llm-service:
+  url: http://llm-service:5000/
 
 spring:
   data:

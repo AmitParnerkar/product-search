@@ -2,7 +2,7 @@ package com.spinach.bestbuy.ai.api
 
 import com.spinach.bestbuy.ai.domain.model.Product
 import com.spinach.bestbuy.ai.domain.model.repo.ProductRepository
-import com.spinach.bestbuy.ai.services.EmbeddingService
+import com.spinach.bestbuy.ai.services.LLMService
 import io.github.resilience4j.retry.annotation.Retry
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -20,9 +20,24 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/api/products")
 @Tag(name = "Best Buy Product API", description = "Smart AI based search for Best Buy products")
 class BestBuyProductController(
-    private val embeddingService: EmbeddingService,
+    private val llmService: LLMService,
     private val productRepository: ProductRepository,
 ) {
+
+    @Operation(
+        summary = "Train model with products",
+        description = "Fine-tune a text model to generate better embeddings",
+        responses = [
+            ApiResponse(description = "Model is trained with data", responseCode = "200"),
+            ApiResponse(description = "Invalid input", responseCode = "400", content = [Content()])
+        ]
+    )
+    @PostMapping("/train")
+    fun trainModel(@RequestBody data: List<Map<String, String>>): String {
+
+        llmService.trainModel(data) // Call the LLMService to train the model
+        return "Model trained successfully with provided data!"
+    }
 
     @Operation(
         summary = "Add a product",
@@ -33,9 +48,9 @@ class BestBuyProductController(
         ]
     )
     @PostMapping("/add")
-    @Retry(name = "embeddingService", fallbackMethod = "fallbackForAddItem")
+    @Retry(name = "llmService", fallbackMethod = "fallbackForAddItem")
     fun addItem(@RequestBody item: Product): String {
-        val embedding = embeddingService.generateEmbedding(item.description)
+        val embedding = llmService.generateEmbedding(item.description)
         val newItem = item.copy(embedding = embedding)
         productRepository.save(newItem)
         return "Item saved successfully!"
@@ -50,13 +65,13 @@ class BestBuyProductController(
         ]
     )
     @GetMapping("/search")
-    @Retry(name = "embeddingService", fallbackMethod = "fallbackForSearchItems")
+    @Retry(name = "llmService", fallbackMethod = "fallbackForSearchItems")
     @Cacheable(value = ["searchCache"], key = "#query")
     fun searchItems(@RequestParam query: String): List<List<String>> {
-        val queryEmbedding = embeddingService.generateEmbedding(query)
+        val queryEmbedding = llmService.generateEmbedding(query)
         val minSimilarityThreshold = 0.7
         return productRepository.findAll()
-            .map { it to it.embedding?.let { it1 -> embeddingService.cosineSimilarity(it1, queryEmbedding) } } // Pair product with similarity score
+            .map { it to it.embedding?.let { it1 -> llmService.cosineSimilarity(it1, queryEmbedding) } } // Pair product with similarity score
             .filter { it.second!! >= minSimilarityThreshold } // Filter by threshold
             .sortedByDescending { it.second } // Sort by similarity
             .take(5) // Limit to top 5 results

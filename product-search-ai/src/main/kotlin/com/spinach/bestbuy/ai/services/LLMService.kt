@@ -10,12 +10,12 @@ import org.springframework.beans.factory.annotation.Value
 import kotlin.math.sqrt
 
 @Service
-class EmbeddingService {
+class LLMService {
 
     private val client = OkHttpClient()
     private val objectMapper = jacksonObjectMapper()
-    @Value("\${embedding-service.url}")
-    private lateinit var pythonServiceUrl: String
+    @Value("\${llm-service.url}")
+    private lateinit var pythonLLMServiceUrl: String
 
     fun generateEmbedding(text: String): List<Double> {
         try {
@@ -25,7 +25,7 @@ class EmbeddingService {
 
             // Make HTTP POST request
             val request = Request.Builder()
-                .url(pythonServiceUrl)
+                .url(pythonLLMServiceUrl+"generate_embedding")
                 .post(requestBody)
                 .build()
 
@@ -41,6 +41,33 @@ class EmbeddingService {
             }
         } catch (e: Exception) {
             throw RuntimeException("Error generating embeddings: ${e.message}", e)
+        }
+    }
+
+    fun trainModel(data: List<Map<String, String>>) {
+        try {
+            // Prepare request payload
+            val jsonPayload = objectMapper.writeValueAsString(data)
+            val requestBody = jsonPayload.toRequestBody("application/json".toMediaType())
+
+            // Make HTTP POST request
+            val request = Request.Builder()
+                .url(pythonLLMServiceUrl + "train")
+                .post(requestBody)
+                .build()
+
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) {
+                    throw RuntimeException("Unexpected code $response")
+                }
+
+                // Parse response
+                val responseBody = response.body?.string()
+                val responseMap: Map<String, String> = objectMapper.readValue(responseBody!!)
+                println("Train endpoint response: ${responseMap["message"]}")
+            }
+        } catch (e: Exception) {
+            throw RuntimeException("Error training model: ${e.message}", e)
         }
     }
 

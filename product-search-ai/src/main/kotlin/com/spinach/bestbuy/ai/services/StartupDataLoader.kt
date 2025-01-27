@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service
 class StartupDataLoader(
     private val productRepository: ProductRepository,
     private val resourceLoader: ResourceLoader,
-    private val embeddingService: EmbeddingService,
+    private val llmService: LLMService,
     private val logger: Logger = LoggerFactory.getLogger(StartupDataLoader::class.java)
 
 ) {
@@ -36,7 +36,7 @@ class StartupDataLoader(
         // Iterate through each product and save it if not already present
         for (product in products) {
             if (productRepository.findByName(product.name) == null) {
-                val embedding = embeddingService.generateEmbedding(product.description)
+                val embedding = llmService.generateEmbedding(product.description)
                 val newProduct = product.copy(embedding = embedding)
                 productRepository.save(newProduct)
                 logger.debug("Loaded product: ${newProduct.name}")

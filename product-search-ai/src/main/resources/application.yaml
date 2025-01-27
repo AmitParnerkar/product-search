@@ -15,7 +15,7 @@ logging:
 resilience4j:
  retry:
   instances:
-   embeddingService:
+   llmService:
     max-attempts: 3
     wait-duration: 500ms
 management:

@@ -49,7 +49,7 @@ resource "google_compute_instance" "app" {
   sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
   sudo usermod -aG docker ubuntu
   sudo apt-get -y install vim
-  sudo wget -O /home/ubuntu/docker-compose.yaml https://gist.githubusercontent.com/AmitParnerkar/7d9305369284000be0b34951c634ef12/raw/4a17673f308cfca7dd10a839003b88078a2ad790/docker-compose.yaml
+  sudo wget -O /home/ubuntu/docker-compose.yaml https://gist.githubusercontent.com/AmitParnerkar/7d9305369284000be0b34951c634ef12/raw/f37ac57d1a9ba686b9660fe38ef79fcd45ca9603/docker-compose.yaml
   cd /home/ubuntu
   sudo docker compose up -d
   EOT
