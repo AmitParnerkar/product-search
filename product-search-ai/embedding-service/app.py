@@ -1,36 +1,61 @@
 from flask import Flask, request, jsonify
-from transformers import AutoTokenizer, AutoModel
-import torch
+from sentence_transformers import SentenceTransformer
+import numpy as np
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# Load tokenizer and model
-MODEL_NAME = "sentence-transformers/all-MiniLM-L6-v2"
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModel.from_pretrained(MODEL_NAME)
+# Load a pre-trained SentenceTransformer model
+model = SentenceTransformer('all-MiniLM-L6-v2')
 
-@app.route('/generate_embedding', methods=['POST'])
-def generate_embedding():
+# In-memory storage for item embeddings
+item_embeddings = {}
+
+@app.route('/train', methods=['POST'])
+def train_model():
+    """
+    Endpoint to train the model (or save embeddings in memory for simplicity).
+    Expects a list of items with name, description, and category fields.
+    """
     try:
-        # Get input text from request
         data = request.json
-        text = data.get("text")
-        if not text:
-            return jsonify({"error": "Text is required"}), 400
+        if not isinstance(data, list):
+            return jsonify({"error": "Invalid input. Must be a list of items."}), 400
 
-        # Tokenize input text
-        inputs = tokenizer(text, return_tensors="pt", padding=True, truncation=True)
+        for item in data:
+            text = f"{item['name']} {item['description']} {item['category']}"
+            embedding = model.encode(text).tolist()  # Convert embedding to a list for JSON serialization
+            item_embeddings[item['name']] = {
+                "embedding": embedding,
+                "description": item['description'],
+                "category": item['category']
+            }
 
-        # Generate embeddings
-        with torch.no_grad():
-            outputs = model(**inputs)
-            embeddings = outputs.last_hidden_state.mean(dim=1).squeeze().tolist()
+        return jsonify({"message": "Training completed. Embeddings saved in memory."}), 200
 
-        return jsonify({"embedding": embeddings})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
-# Run the Flask app
+
+@app.route('/generate_embedding', methods=['POST'])
+def generate_embedding():
+    """
+    Endpoint to generate an embedding for the provided text.
+    Expects a JSON payload with a "text" field.
+    """
+    try:
+        data = request.json
+        text = data.get("text")
+        if not text:
+            return jsonify({"error": "Text is required."}), 400
+
+        # Generate the embedding
+        embedding = model.encode(text).tolist()
+
+        return jsonify({"embedding": embedding}), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000)
